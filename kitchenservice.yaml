@@ -1,43 +1,53 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: searchservice
+  name: kitchenservice
   namespace: fasttech-foods
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: searchservice
+      app: kitchenservice
   template:
     metadata:
       labels:
-        app: searchservice
+        app: kitchenservice
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8080"
         prometheus.io/path: "/metrics"
     spec:
       containers:
-      - name: searchservice
-        image: otaviofaria/searchservice:latest
+      - name: kitchenservice
+        image: leonardodfg12/kitchenservice:latest
         ports:
         - containerPort: 8080
         env:
-        - name: ASPNETCORE_ENVIRONMENT
+        - name: MONGO_CONNECTION_STRING
           valueFrom:
             configMapKeyRef:
               name: fasttech-config
-              key: ASPNETCORE_ENVIRONMENT
-        - name: MongoDbSettings__ConnectionString
+              key: MONGO_CONNECTION_STRING
+        - name: MONGO_DATABASE_NAME
           valueFrom:
             configMapKeyRef:
               name: fasttech-config
-              key: MongoDbSettings__ConnectionString
-        - name: MongoDbSettings__DatabaseName
+              key: MONGO_DATABASE_NAME
+        - name: RABBITMQ_HOST
           valueFrom:
             configMapKeyRef:
               name: fasttech-config
-              key: MongoDbSettings__DatabaseName
+              key: RABBITMQ_HOST
+        - name: RABBITMQ_USERNAME
+          valueFrom:
+            configMapKeyRef:
+              name: fasttech-config
+              key: RABBITMQ_USERNAME
+        - name: RABBITMQ_PASSWORD
+          valueFrom:
+            configMapKeyRef:
+              name: fasttech-config
+              key: RABBITMQ_PASSWORD
         - name: JWT_KEY
           valueFrom:
             configMapKeyRef:
@@ -64,13 +74,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: searchservice
+  name: kitchenservice
   namespace: fasttech-foods
 spec:
   selector:
-    app: searchservice
+    app: kitchenservice
   ports:
   - port: 8080
     targetPort: 8080
-    nodePort: 30003
+    nodePort: 30005
   type: NodePort 

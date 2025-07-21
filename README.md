@@ -5,10 +5,11 @@
 Sistema de microsserviços para rede de fast food com foco em escalabilidade, observabilidade e automação.
 
 ### Microsserviços
-- **AuthService** (Porta 30001) - Autenticação de funcionários
+- **AuthService** (Porta 30001) - Autenticação de funcionários (imagem: leonardodfg12/authservice:latest)
 - **MenuService** (Porta 30002) - Gestão do cardápio  
 - **SearchService** (Porta 30003) - Busca e filtros de produtos
 - **OrderService** (Porta 30004) - Gestão de pedidos
+- **KitchenService** (Porta 30005) - Gestão da cozinha e status de pedidos
 
 ### Dependências
 - **MongoDB** - Banco de dados NoSQL (usando `mongodb-simple.yaml` para melhor compatibilidade)
@@ -91,6 +92,7 @@ kubectl apply -f authservice.yaml
 kubectl apply -f menuservice.yaml
 kubectl apply -f searchservice.yaml
 kubectl apply -f orderservice.yaml
+kubectl apply -f kitchenservice.yaml
 ```
 
 ### Parte 3: Configurar Auto-Scaling (HPA)
@@ -110,6 +112,7 @@ kubectl apply -f authservice-hpa.yaml
 kubectl apply -f menuservice-hpa.yaml
 kubectl apply -f searchservice-hpa.yaml
 kubectl apply -f orderservice-hpa.yaml
+kubectl apply -f kitchenservice-hpa.yaml
 ```
 
 3. **Verificar status dos HPAs**
@@ -144,6 +147,7 @@ kubectl wait --for=condition=ready pod -l app=grafana -n fasttech-foods --timeou
 - **MenuService**: http://localhost:30002
 - **SearchService**: http://localhost:30003
 - **OrderService**: http://localhost:30004
+- **KitchenService**: http://localhost:30005
 
 ### Observabilidade
 - **Prometheus**: http://localhost:30090
@@ -198,6 +202,7 @@ kubectl get hpa -n fasttech-foods
 4. **Ver logs específicos**
 ```bash
 kubectl logs -l app=authservice -n fasttech-foods --tail=50
+kubectl logs -l app=kitchenservice -n fasttech-foods --tail=50
 kubectl logs -l app=searchservice -n fasttech-foods --tail=50
 ```
 
@@ -212,18 +217,21 @@ kubectl top nodes
 ### Restart de serviços
 ```bash
 kubectl rollout restart deployment authservice -n fasttech-foods
+kubectl rollout restart deployment kitchenservice -n fasttech-foods
 kubectl rollout restart deployment searchservice -n fasttech-foods
 ```
 
 ### Port Forward (acesso local)
 ```bash
 kubectl port-forward svc/authservice -n fasttech-foods 8001:80
+kubectl port-forward svc/kitchenservice -n fasttech-foods 8005:8080
 kubectl port-forward svc/grafana -n fasttech-foods 3000:3000
 ```
 
 ### Escalar manualmente
 ```bash
 kubectl scale deployment authservice --replicas=5 -n fasttech-foods
+kubectl scale deployment kitchenservice --replicas=3 -n fasttech-foods
 ```
 
 ### Verificar eventos
@@ -235,8 +243,8 @@ kubectl get events -n fasttech-foods --sort-by='.lastTimestamp'
 
 ```bash
 # Deletar todos os recursos
-kubectl delete -f authservice-hpa.yaml -f menuservice-hpa.yaml -f searchservice-hpa.yaml -f orderservice-hpa.yaml
-kubectl delete -f authservice.yaml -f menuservice.yaml -f searchservice.yaml -f orderservice.yaml
+kubectl delete -f authservice-hpa.yaml -f menuservice-hpa.yaml -f searchservice-hpa.yaml -f orderservice-hpa.yaml -f kitchenservice-hpa.yaml
+kubectl delete -f authservice.yaml -f menuservice.yaml -f searchservice.yaml -f orderservice.yaml -f kitchenservice.yaml
 kubectl delete -f prometheus.yaml -f grafana.yaml -f grafana-config.yaml -f prometheus-config.yaml
 kubectl delete -f rabbitmq.yaml -f mongodb-simple.yaml
 kubectl delete -f configmap.yaml
@@ -280,7 +288,15 @@ kubectl rollout restart deployment grafana -n fasttech-foods
 
 - ✅ Todos os pods em estado `Running`
 - ✅ HPAs mostrando métricas de CPU/Memory
-- ✅ Prometheus coletando métricas dos serviços
+- ✅ Prometheus coletando métricas dos 5 serviços
 - ✅ Grafana exibindo dashboards
 - ✅ Auto-scaling funcionando durante teste de carga
 - ✅ Resposta < 500ms nos endpoints principais
+- ✅ KitchenService processando pedidos via RabbitMQ
+
+## 🍽️ Endpoints do KitchenService
+
+- `GET /kitchen/ListarPedidos` - Lista todos os pedidos
+- `PUT /kitchen/Aceitar/{id}` - Aceita um pedido
+- `PUT /kitchen/Rejeitar/{id}` - Rejeita um pedido (com justificativa)
+- `PUT /kitchen/Cancelar/{id}` - Cancela um pedido

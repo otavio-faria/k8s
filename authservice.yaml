@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
       - name: authservice
-        image: mateusmo/authservice:latest
+        image: leonardodfg12/authservice:latest
         ports:
         - containerPort: 80
         env:
@@ -53,6 +53,21 @@ spec:
             configMapKeyRef:
               name: fasttech-config
               key: RABBITMQ_PASSWORD
+        - name: JWT_KEY
+          valueFrom:
+            configMapKeyRef:
+              name: fasttech-config
+              key: JWT_KEY
+        - name: JWT_ISSUER
+          valueFrom:
+            configMapKeyRef:
+              name: fasttech-config
+              key: JWT_ISSUER
+        - name: JWT_AUDIENCE
+          valueFrom:
+            configMapKeyRef:
+              name: fasttech-config
+              key: JWT_AUDIENCE
         resources:
           requests:
             cpu: 100m

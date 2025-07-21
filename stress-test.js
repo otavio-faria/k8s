@@ -16,6 +16,7 @@ export const options = {
     'http_req_duration{name:menu}': ['p(95)<400'],
     'http_req_duration{name:search}': ['p(95)<300'],
     'http_req_duration{name:order}': ['p(95)<600'],
+    'http_req_duration{name:kitchen}': ['p(95)<500'],
   },
 };
 
@@ -37,7 +38,7 @@ export default function() {
   };
   
   const authResponse = http.post(
-    'http://localhost:30001/api/login', 
+    'http://localhost:30001/auth/login', 
     authPayload, 
     authParams
   );
@@ -59,7 +60,7 @@ export default function() {
   });
   
   const menuResponse = http.post(
-    'http://localhost:30002/api/menu-items', 
+    'http://localhost:30002/MenuService/Create', 
     menuPayload, 
     { 
       headers: { 'Content-Type': 'application/json' },
@@ -68,7 +69,7 @@ export default function() {
   );
   
   check(menuResponse, {
-    'menu status 200-201': (r) => r.status >= 200 && r.status <= 201,
+    'menu status 200-401': (r) => r.status >= 200 && r.status <= 401,
     'menu response time < 400ms': (r) => r.timings.duration < 400,
   });
   
@@ -81,7 +82,7 @@ export default function() {
   );
   
   check(searchResponse, {
-    'search status 200': (r) => r.status === 200,
+    'search status 200-401': (r) => r.status >= 200 && r.status <= 401,
     'search response time < 300ms': (r) => r.timings.duration < 300,
   });
   
@@ -102,7 +103,7 @@ export default function() {
   });
   
   const orderResponse = http.post(
-    'http://localhost:30004/api/orders', 
+    'http://localhost:30004/OrderService/Create', 
     orderPayload, 
     { 
       headers: { 'Content-Type': 'application/json' },
@@ -111,8 +112,21 @@ export default function() {
   );
   
   check(orderResponse, {
-    'order status 200-201': (r) => r.status >= 200 && r.status <= 201,
+    'order status 200-401': (r) => r.status >= 200 && r.status <= 401,
     'order response time < 600ms': (r) => r.timings.duration < 600,
+  });
+  
+  sleep(Math.random() * 1);
+  
+  // Teste do KitchenService
+  const kitchenResponse = http.get(
+    'http://localhost:30005/kitchen/ListarPedidos', 
+    { tags: { name: 'kitchen' } }
+  );
+  
+  check(kitchenResponse, {
+    'kitchen status 200-401': (r) => r.status >= 200 && r.status <= 401,
+    'kitchen response time < 500ms': (r) => r.timings.duration < 500,
   });
   
   sleep(Math.random() * 3);

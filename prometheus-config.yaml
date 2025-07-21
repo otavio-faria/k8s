@@ -56,4 +56,9 @@ data:
       - job_name: "orderservice"
         static_configs:
         - targets: ["orderservice.fasttech-foods.svc.cluster.local:8080"]
+        metrics_path: /metrics
+
+      - job_name: "kitchenservice"
+        static_configs:
+        - targets: ["kitchenservice.fasttech-foods.svc.cluster.local:8080"]
         metrics_path: /metrics 
