@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fasttech-config
+  namespace: fasttech-foods
+data:
+  ASPNETCORE_ENVIRONMENT: "Production"
+  MONGO_CONNECTION_STRING: "mongodb://admin:password123@mongodb:27017"
+  MONGO_DATABASE_NAME: "FastTechFoods"
+  RABBITMQ_HOST: "rabbitmq"
+  RABBITMQ_USERNAME: "admin"
+  RABBITMQ_PASSWORD: "password123"
+  MongoDbSettings__ConnectionString: "mongodb://admin:password123@mongodb:27017"
+  MongoDbSettings__DatabaseName: "FastTechFoods" 

@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orderservice
+  namespace: fasttech-foods
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: orderservice
+  template:
+    metadata:
+      labels:
+        app: orderservice
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+      - name: orderservice
+        image: leonardodfg12/orderservice:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: MONGO_CONNECTION_STRING
+          valueFrom:
+            configMapKeyRef:
+              name: fasttech-config
+              key: MONGO_CONNECTION_STRING
+        - name: MONGO_DATABASE_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: fasttech-config
+              key: MONGO_DATABASE_NAME
+        - name: RABBITMQ_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: fasttech-config
+              key: RABBITMQ_HOST
+        - name: RABBITMQ_USERNAME
+          valueFrom:
+            configMapKeyRef:
+              name: fasttech-config
+              key: RABBITMQ_USERNAME
+        - name: RABBITMQ_PASSWORD
+          valueFrom:
+            configMapKeyRef:
+              name: fasttech-config
+              key: RABBITMQ_PASSWORD
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 300m
+            memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: orderservice
+  namespace: fasttech-foods
+spec:
+  selector:
+    app: orderservice
+  ports:
+  - port: 8080
+    targetPort: 8080
+    nodePort: 30004
+  type: NodePort 

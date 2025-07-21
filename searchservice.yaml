@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: searchservice
+  namespace: fasttech-foods
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: searchservice
+  template:
+    metadata:
+      labels:
+        app: searchservice
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+      - name: searchservice
+        image: otaviofaria/searchservice:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          valueFrom:
+            configMapKeyRef:
+              name: fasttech-config
+              key: ASPNETCORE_ENVIRONMENT
+        - name: MongoDbSettings__ConnectionString
+          valueFrom:
+            configMapKeyRef:
+              name: fasttech-config
+              key: MongoDbSettings__ConnectionString
+        - name: MongoDbSettings__DatabaseName
+          valueFrom:
+            configMapKeyRef:
+              name: fasttech-config
+              key: MongoDbSettings__DatabaseName
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 300m
+            memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: searchservice
+  namespace: fasttech-foods
+spec:
+  selector:
+    app: searchservice
+  ports:
+  - port: 8080
+    targetPort: 8080
+    nodePort: 30003
+  type: NodePort 

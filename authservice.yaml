@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: authservice
+  namespace: fasttech-foods
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: authservice
+  template:
+    metadata:
+      labels:
+        app: authservice
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "80"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+      - name: authservice
+        image: mateusmo/authservice:latest
+        ports:
+        - containerPort: 80
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          valueFrom:
+            configMapKeyRef:
+              name: fasttech-config
+              key: ASPNETCORE_ENVIRONMENT
+        - name: MONGO_CONNECTION_STRING
+          valueFrom:
+            configMapKeyRef:
+              name: fasttech-config
+              key: MONGO_CONNECTION_STRING
+        - name: MONGO_DATABASE_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: fasttech-config
+              key: MONGO_DATABASE_NAME
+        - name: RABBITMQ_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: fasttech-config
+              key: RABBITMQ_HOST
+        - name: RABBITMQ_USERNAME
+          valueFrom:
+            configMapKeyRef:
+              name: fasttech-config
+              key: RABBITMQ_USERNAME
+        - name: RABBITMQ_PASSWORD
+          valueFrom:
+            configMapKeyRef:
+              name: fasttech-config
+              key: RABBITMQ_PASSWORD
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 300m
+            memory: 256Mi
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: authservice
+  namespace: fasttech-foods
+spec:
+  selector:
+    app: authservice
+  ports:
+  - port: 80
+    targetPort: 80
+    nodePort: 30001
+  type: NodePort 
