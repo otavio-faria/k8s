@@ -14,81 +14,56 @@ spec:
         app: authservice
       annotations:
         prometheus.io/scrape: "true"
-        prometheus.io/port: "80"
-        prometheus.io/path: "/metrics"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/swagger"
     spec:
       containers:
-      - name: authservice
-        image: leonardodfg12/authservice:latest
-        ports:
-        - containerPort: 80
-        env:
-        - name: ASPNETCORE_ENVIRONMENT
-          valueFrom:
-            configMapKeyRef:
-              name: fasttech-config
-              key: ASPNETCORE_ENVIRONMENT
-        - name: MONGO_CONNECTION_STRING
-          valueFrom:
-            configMapKeyRef:
-              name: fasttech-config
-              key: MONGO_CONNECTION_STRING
-        - name: MONGO_DATABASE_NAME
-          valueFrom:
-            configMapKeyRef:
-              name: fasttech-config
-              key: MONGO_DATABASE_NAME
-        - name: RABBITMQ_HOST
-          valueFrom:
-            configMapKeyRef:
-              name: fasttech-config
-              key: RABBITMQ_HOST
-        - name: RABBITMQ_USERNAME
-          valueFrom:
-            configMapKeyRef:
-              name: fasttech-config
-              key: RABBITMQ_USERNAME
-        - name: RABBITMQ_PASSWORD
-          valueFrom:
-            configMapKeyRef:
-              name: fasttech-config
-              key: RABBITMQ_PASSWORD
-        - name: JWT_KEY
-          valueFrom:
-            configMapKeyRef:
-              name: fasttech-config
-              key: JWT_KEY
-        - name: JWT_ISSUER
-          valueFrom:
-            configMapKeyRef:
-              name: fasttech-config
-              key: JWT_ISSUER
-        - name: JWT_AUDIENCE
-          valueFrom:
-            configMapKeyRef:
-              name: fasttech-config
-              key: JWT_AUDIENCE
-        resources:
-          requests:
-            cpu: 100m
-            memory: 128Mi
-          limits:
-            cpu: 300m
-            memory: 256Mi
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 80
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          timeoutSeconds: 5
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 80
-          initialDelaySeconds: 60
-          periodSeconds: 30
-          timeoutSeconds: 5
+        - name: authservice
+          image: leonardodfg12/authservice:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: MONGO_CONNECTION_STRING
+              value: "mongodb://mongodb:27017"
+            - name: MONGO_DATABASE_NAME
+              value: "AuthDb"
+            - name: JWT_KEY
+              value: "MySuperSecureKeyForJWT@2025##TokenOk!"
+            - name: JWT_ISSUER
+              value: "AuthService"
+            - name: JWT_AUDIENCE
+              value: "APIsInternas"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 300m
+              memory: 256Mi
+          readinessProbe:
+            httpGet:
+              path: /swagger/index.html
+              port: 8080
+            initialDelaySeconds: 45
+            periodSeconds: 15
+            timeoutSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /swagger/index.html
+              port: 8080
+            initialDelaySeconds: 90
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /swagger/index.html
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 30
 ---
 apiVersion: v1
 kind: Service
@@ -99,7 +74,7 @@ spec:
   selector:
     app: authservice
   ports:
-  - port: 80
-    targetPort: 80
-    nodePort: 30001
-  type: NodePort 
+    - port: 8080
+      targetPort: 8080
+      nodePort: 30001
+  type: NodePort

@@ -156,7 +156,7 @@ kubectl wait --for=condition=ready pod -l app=grafana -n fasttech-foods --timeou
 
 ### Mensageria
 - **RabbitMQ Management**: http://localhost:30672
-  - 👤 Usuário: `admin` | Senha: `password123`
+  - 👤 Usuário: `guest` | Senha: `guest`
 
 ## 🧪 Executar Teste de Carga
 

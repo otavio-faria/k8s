@@ -5,12 +5,12 @@ metadata:
   namespace: fasttech-foods
 data:
   ASPNETCORE_ENVIRONMENT: "Production"
-  MONGO_CONNECTION_STRING: "mongodb://admin:password123@mongodb:27017"
+  MONGO_CONNECTION_STRING: "mongodb://mongodb:27017"
   MONGO_DATABASE_NAME: "FastTechFoods"
   RABBITMQ_HOST: "rabbitmq"
-  RABBITMQ_USERNAME: "admin"
-  RABBITMQ_PASSWORD: "password123"
-  MongoDbSettings__ConnectionString: "mongodb://admin:password123@mongodb:27017"
+  RABBITMQ_USERNAME: "guest"
+  RABBITMQ_PASSWORD: "guest"
+  MongoDbSettings__ConnectionString: "mongodb://mongodb:27017"
   MongoDbSettings__DatabaseName: "FastTechFoods"
   JWT_KEY: "MySuperSecureKeyForJWT@2025##TokenOk!"
   JWT_ISSUER: "AuthService"
